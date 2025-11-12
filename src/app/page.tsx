@@ -74,25 +74,27 @@ export default async function Home() {
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <div className="relative group">
-                <svg width="120" height="120" viewBox="0 0 120 120" className="relative z-10 group-hover:scale-105 transition-all duration-500">
+                <svg width="120" height="120" viewBox="0 0 512 512" className="relative z-10 group-hover:scale-105 transition-all duration-500">
                   <defs>
                     <linearGradient id="heroLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#0c2b4d" />
-                      <stop offset="50%" stopColor="#36234e" />
-                      <stop offset="100%" stopColor="#5f638f" />
+                      <stop offset="0%" stopColor="#dedff1" />
+                      <stop offset="50%" stopColor="#5f638f" />
+                      <stop offset="100%" stopColor="#dedff1" />
                     </linearGradient>
                     <filter id="heroGlow">
-                      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
                       <feMerge> 
                         <feMergeNode in="coloredBlur"/>
                         <feMergeNode in="SourceGraphic"/> 
                       </feMerge>
                     </filter>
                   </defs>
-                  <path d="M96 24 Q90 18 84 24 L36 84 Q30 90 24 96 L30 102 Q36 96 42 90 L102 30 Q108 24 102 18 Z" fill="url(#heroLogoGradient)" filter="url(#heroGlow)" className="group-hover:opacity-90 transition-opacity" />
-                  <path d="M24 96 L18 114 L36 108 L30 102 Z" fill="#000022" opacity="0.6" />
-                  <path d="M84 24 L96 36" stroke="#dedff1" strokeWidth="4.5" strokeLinecap="round" opacity="0.8" />
-                  <path d="M78 30 L90 42" stroke="#dedff1" strokeWidth="3" strokeLinecap="round" opacity="0.5" />
+                  <g transform="translate(0,512) scale(0.1,-0.1)" fill="url(#heroLogoGradient)" filter="url(#heroGlow)" className="group-hover:opacity-90 transition-opacity">
+                    <path d="M4655 4661c121-121 222-221 224-221 9 0-9 128-24 170-51 145-190 247-362 266l-58 6 220-221z"/>
+                    <path d="M3140 3753c-663-569-1207-1039-1209-1045-3-10 807-828 821-828 5 0 468 537 1029 1193 562 655 1029 1200 1037 1210 15 17 0 34-229 261l-244 244-1205-1035z"/>
+                    <path d="M1446 2053l-368-536 243-243 244-244 538 372 538 371-408 409c-224 224-410 408-413 407-3 0-171-241-374-536z"/>
+                    <path d="M823 1181l-262-196-6-45c-39-279-128-497-267-655l-42-48 41 26c76 48 218 116 298 142 119 40 200 55 301 55l91 0 219 285c120 156 220 290 222 297 1 8-73 86-166 175l-168 161-261-197zm43-360c101-62 29-217-83-180-108 35-83 195 32 198 11 1 34-8 51-18z"/>
+                  </g>
                 </svg>
               </div>
             </div>

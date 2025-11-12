@@ -85,7 +85,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <div className="flex flex-col min-h-screen">
           <Navbar user={user} />
           <main className="flex-grow bg-gray-50">{children}</main>

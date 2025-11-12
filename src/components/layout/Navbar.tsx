@@ -51,7 +51,7 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="relative group-hover:scale-105 transition-all duration-300 ease-out">
-              <svg width="40" height="40" viewBox="0 0 40 40" className="relative z-10">
+              <svg width="40" height="40" viewBox="0 0 512 512" className="relative z-10">
                 <defs>
                   <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#0c2b4d" />
@@ -59,17 +59,19 @@ export default function Navbar({ user }: NavbarProps) {
                     <stop offset="100%" stopColor="#5f638f" />
                   </linearGradient>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                     <feMerge> 
                       <feMergeNode in="coloredBlur"/>
                       <feMergeNode in="SourceGraphic"/> 
                     </feMerge>
                   </filter>
                 </defs>
-                <path d="M32 8 Q30 6 28 8 L12 28 Q10 30 8 32 L10 34 Q12 32 14 30 L34 10 Q36 8 34 6 Z" fill="url(#logoGradient)" filter="url(#glow)" className="group-hover:opacity-90 transition-opacity" />
-                <path d="M8 32 L6 38 L12 36 L10 34 Z" fill="#000022" opacity="0.6" />
-                <path d="M28 8 L32 12" stroke="#dedff1" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
-                <path d="M26 10 L30 14" stroke="#dedff1" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+                <g transform="translate(0,512) scale(0.1,-0.1)" fill="url(#logoGradient)" filter="url(#glow)" className="group-hover:opacity-90 transition-opacity">
+                  <path d="M4655 4661c121-121 222-221 224-221 9 0-9 128-24 170-51 145-190 247-362 266l-58 6 220-221z"/>
+                  <path d="M3140 3753c-663-569-1207-1039-1209-1045-3-10 807-828 821-828 5 0 468 537 1029 1193 562 655 1029 1200 1037 1210 15 17 0 34-229 261l-244 244-1205-1035z"/>
+                  <path d="M1446 2053l-368-536 243-243 244-244 538 372 538 371-408 409c-224 224-410 408-413 407-3 0-171-241-374-536z"/>
+                  <path d="M823 1181l-262-196-6-45c-39-279-128-497-267-655l-42-48 41 26c76 48 218 116 298 142 119 40 200 55 301 55l91 0 219 285c120 156 220 290 222 297 1 8-73 86-166 175l-168 161-261-197zm43-360c101-62 29-217-83-180-108 35-83 195 32 198 11 1 34-8 51-18z"/>
+                </g>
               </svg>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-[#0c2b4d] via-[#36234e] to-[#5f638f] bg-clip-text text-transparent group-hover:from-[#36234e] group-hover:via-[#5f638f] group-hover:to-[#0c2b4d] transition-all duration-300">

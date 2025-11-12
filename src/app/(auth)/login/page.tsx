@@ -137,8 +137,21 @@ export default function LoginPage() {
               <form onSubmit={handleVerify2FA} className="space-y-5">
                 {/* Info */}
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
-                  <p className="text-sm font-medium">Autenticación de Dos Factores</p>
-                  <p className="text-xs mt-1">Ingresa el código de 6 dígitos de tu app de autenticación</p>
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium mb-1">Autenticación de Dos Factores</p>
+                      <p className="text-xs mb-2">Tu cuenta está protegida con 2FA</p>
+                      <ol className="text-xs space-y-1 list-decimal list-inside">
+                        <li>Abre tu app de autenticación (Google Authenticator, Authy, etc.)</li>
+                        <li>Busca la entrada de "LibreBlog"</li>
+                        <li>Ingresa el código de 6 dígitos que aparece</li>
+                      </ol>
+                      <p className="text-xs mt-2 text-blue-700">
+                        🕒 El código cambia cada 30 segundos
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Error Alert */}
