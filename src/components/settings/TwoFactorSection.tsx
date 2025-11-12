@@ -111,10 +111,19 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       const factors = await supabase.auth.mfa.listFactors();
       if (factors.error) throw factors.error;
 
+      let hasError = false;
       if (factors.data?.totp && factors.data.totp.length > 0) {
         for (const factor of factors.data.totp) {
-          await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          if (error) {
+            console.error('Error eliminando factor:', error);
+            hasError = true;
+          }
         }
+      }
+
+      if (hasError) {
+        throw new Error('Para desactivar 2FA, debes cerrar sesión e iniciar de nuevo con tu código 2FA. Esto es una medida de seguridad de Supabase.');
       }
 
       onStatusChange(true);
@@ -137,7 +146,9 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
 
       if (factors.data?.totp && factors.data.totp.length > 0) {
         for (const factor of factors.data.totp) {
-          await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          await supabase.auth.mfa.unenroll({ factorId: factor.id }).catch(e => {
+            console.warn('Error eliminando factor (ignorado):', e);
+          });
         }
       }
 

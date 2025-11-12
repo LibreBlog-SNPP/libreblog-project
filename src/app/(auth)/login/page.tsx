@@ -7,12 +7,15 @@ import Button from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { createClient } from '@/lib/supabase/client'
 import { isEmailAuthEnabled } from '@/lib/utils'
-import { LogIn, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, CheckCircle, Shield } from 'lucide-react'
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [totpCode, setTotpCode] = useState('')
+  const [factorId, setFactorId] = useState('')
+  const [needs2FA, setNeeds2FA] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -58,12 +61,56 @@ export default function LoginPage() {
         return
       }
 
+      // Verificar si el usuario tiene 2FA activo
+      const factors = await supabase.auth.mfa.listFactors()
+      const verifiedFactors = factors.data?.totp?.filter(f => f.status === 'verified') || []
+      
+      if (verifiedFactors.length > 0) {
+        // Usuario tiene 2FA activo, solicitar código
+        setFactorId(verifiedFactors[0].id)
+        setNeeds2FA(true)
+        setIsLoading(false)
+        return
+      }
+
       if (data.user) {
-        // Forzar recarga completa para actualizar el layout con el nuevo usuario
+        // No tiene 2FA, login completo
         window.location.href = '/dashboard'
       }
     } catch (err) {
       setError('Error al iniciar sesión. Intenta nuevamente.')
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+
+    try {
+      const supabase = createClient()
+      
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId,
+        code: totpCode
+      })
+
+      if (error) {
+        if (error.message.includes('Invalid TOTP code')) {
+          setError('Código incorrecto. Verifica tu app de autenticación.')
+        } else {
+          setError(error.message)
+        }
+        return
+      }
+
+      // 2FA verificado, redirigir
+      window.location.href = '/dashboard'
+    } catch (err) {
+      setError('Error al verificar código. Intenta nuevamente.')
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -86,6 +133,66 @@ export default function LoginPage() {
         <Card variant="default">
           <CardContent className="p-6">
             {isEmailAuthEnabled() ? (
+            needs2FA ? (
+              <form onSubmit={handleVerify2FA} className="space-y-5">
+                {/* Info */}
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
+                  <p className="text-sm font-medium">Autenticación de Dos Factores</p>
+                  <p className="text-xs mt-1">Ingresa el código de 6 dígitos de tu app de autenticación</p>
+                </div>
+
+                {/* Error Alert */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
+
+                {/* TOTP Code Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Código de Verificación
+                  </label>
+                  <input
+                    type="text"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                    maxLength={6}
+                    placeholder="123456"
+                    required
+                    autoFocus
+                    className="w-full px-4 py-3 border-2 border-[#5f638f]/30 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#0c2b4d] focus:border-transparent transition-all shadow-sm text-center text-2xl tracking-widest font-mono"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  isLoading={isLoading}
+                  disabled={totpCode.length !== 6}
+                  className="w-full"
+                >
+                  {isLoading ? 'Verificando...' : 'Verificar Código'}
+                </Button>
+
+                {/* Back Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNeeds2FA(false)
+                    setTotpCode('')
+                    setFactorId('')
+                    setError('')
+                  }}
+                  className="w-full text-sm text-[#5f638f] hover:text-[#0c2b4d] transition-colors"
+                >
+                  ← Volver al login
+                </button>
+              </form>
+            ) : (
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Success Alert */}
               {success && (
@@ -150,6 +257,7 @@ export default function LoginPage() {
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </Button>
             </form>
+            )
             ) : (
               <div className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
