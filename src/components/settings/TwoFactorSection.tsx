@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 
 interface TwoFactorSectionProps {
   isEnabled: boolean;
-  onStatusChange: () => void;
+  onStatusChange: (wasEnabled: boolean) => void;
 }
 
 export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFactorSectionProps) {
@@ -75,7 +75,7 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       setSecret('');
       setFactorId('');
       setVerifyCode('');
-      onStatusChange();
+      onStatusChange(false);
     } catch (err: any) {
       setError(err.message || 'Código incorrecto');
     } finally {
@@ -117,7 +117,7 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
         }
       }
 
-      onStatusChange();
+      onStatusChange(true);
     } catch (err: any) {
       setError(err.message || 'Error al desactivar 2FA');
     } finally {
@@ -146,7 +146,7 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       setFactorId('');
       setVerifyCode('');
       setShowReset(false);
-      onStatusChange();
+      onStatusChange(true);
     } catch (err: any) {
       setError(err.message || 'Error al resetear 2FA');
     } finally {

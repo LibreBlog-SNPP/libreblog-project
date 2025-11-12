@@ -309,7 +309,7 @@ export default function SettingsPage() {
         <div className="mb-6">
           <TwoFactorSection
             isEnabled={is2FAEnabled}
-            onStatusChange={async () => {
+            onStatusChange={async (wasEnabled) => {
               // Recargar el estado real desde Supabase
               const supabase = createClient()
               const factors = await supabase.auth.mfa.listFactors()
@@ -318,7 +318,7 @@ export default function SettingsPage() {
               setIs2FAEnabled(newState)
               setMessage({ 
                 type: 'success', 
-                text: newState ? '2FA activado correctamente' : '2FA desactivado' 
+                text: wasEnabled ? '2FA desactivado correctamente' : '2FA activado correctamente' 
               })
             }}
           />
