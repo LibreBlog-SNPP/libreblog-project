@@ -111,9 +111,10 @@ export default function SettingsPage() {
         setLinkedinUrl(userData.linkedinUrl || '')
         setNsfwProtection(userData.nsfwProtection ?? true)
         
-        // Verificar estado de 2FA
+        // Verificar estado de 2FA - SOLO factores verificados
         const factors = await supabase.auth.mfa.listFactors()
-        setIs2FAEnabled((factors.data?.totp?.length ?? 0) > 0)
+        const verifiedFactors = factors.data?.totp?.filter(f => f.status === 'verified') || []
+        setIs2FAEnabled(verifiedFactors.length > 0)
       } catch (error) {
         console.error('Error cargando usuario:', error)
         setIs2FAEnabled(false)
@@ -308,11 +309,16 @@ export default function SettingsPage() {
         <div className="mb-6">
           <TwoFactorSection
             isEnabled={is2FAEnabled}
-            onStatusChange={() => {
-              setIs2FAEnabled(!is2FAEnabled)
+            onStatusChange={async () => {
+              // Recargar el estado real desde Supabase
+              const supabase = createClient()
+              const factors = await supabase.auth.mfa.listFactors()
+              const verifiedFactors = factors.data?.totp?.filter(f => f.status === 'verified') || []
+              const newState = verifiedFactors.length > 0
+              setIs2FAEnabled(newState)
               setMessage({ 
                 type: 'success', 
-                text: is2FAEnabled ? '2FA desactivado' : '2FA activado correctamente' 
+                text: newState ? '2FA activado correctamente' : '2FA desactivado' 
               })
             }}
           />
