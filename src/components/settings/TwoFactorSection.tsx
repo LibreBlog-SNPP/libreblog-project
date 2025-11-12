@@ -14,6 +14,7 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
   const [verifyCode, setVerifyCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
   const supabase = createClient();
 
   const handleEnable = async () => {
@@ -21,6 +22,20 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
     setError('');
 
     try {
+      // Primero verificar si hay factores existentes
+      const factors = await supabase.auth.mfa.listFactors();
+      if (factors.error) throw factors.error;
+
+      // Si hay factores TOTP no verificados, eliminarlos primero
+      if (factors.data?.totp && factors.data.totp.length > 0) {
+        for (const factor of factors.data.totp) {
+          if (factor.status !== 'verified') {
+            await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          }
+        }
+      }
+
+      // Ahora crear el nuevo factor
       const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
 
       if (error) throw error;
@@ -43,7 +58,8 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       const factors = await supabase.auth.mfa.listFactors();
       if (factors.error) throw factors.error;
 
-      const totpFactor = factors.data.totp[0];
+      // Buscar el factor TOTP más reciente no verificado
+      const totpFactor = factors.data.totp?.find(f => f.status !== 'verified') || factors.data.totp?.[0];
       if (!totpFactor) throw new Error('No se encontró el factor TOTP');
 
       const { error } = await supabase.auth.mfa.challengeAndVerify({
@@ -51,7 +67,12 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
         code: verifyCode
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Invalid TOTP code')) {
+          throw new Error('Código incorrecto. Verifica que el código sea de 6 dígitos y esté actualizado.');
+        }
+        throw error;
+      }
 
       setQrCode('');
       setSecret('');
@@ -74,15 +95,45 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       const factors = await supabase.auth.mfa.listFactors();
       if (factors.error) throw factors.error;
 
-      const totpFactor = factors.data.totp[0];
-      if (!totpFactor) throw new Error('No se encontró el factor TOTP');
-
-      const { error } = await supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
-      if (error) throw error;
+      // Eliminar todos los factores TOTP
+      if (factors.data?.totp && factors.data.totp.length > 0) {
+        for (const factor of factors.data.totp) {
+          const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          if (error) console.warn('Error eliminando factor:', error);
+        }
+      }
 
       onStatusChange();
     } catch (err: any) {
       setError(err.message || 'Error al desactivar 2FA');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset2FA = async () => {
+    if (!confirm('¿Resetear completamente el 2FA? Esto eliminará todos los factores existentes.')) return;
+
+    setLoading(true);
+    setError('');
+    setQrCode('');
+    setSecret('');
+    setVerifyCode('');
+
+    try {
+      const response = await fetch('/api/auth/mfa', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al resetear 2FA');
+      }
+
+      setShowReset(false);
+      onStatusChange();
+    } catch (err: any) {
+      setError(err.message || 'Error al resetear 2FA');
     } finally {
       setLoading(false);
     }
@@ -94,29 +145,51 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-          {error}
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              {error}
+              {error.includes('already exists') && (
+                <div className="mt-2 text-xs">
+                  <button
+                    onClick={() => setShowReset(true)}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    ¿Resetear 2FA?
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
       {!isEnabled && !qrCode && (
         <div>
           <p className="text-sm text-gray-600 mb-4">
-            Agrega una capa extra de seguridad a tu cuenta
+            Agrega una capa extra de seguridad a tu cuenta usando Google Authenticator, Authy u otra app TOTP.
           </p>
-          <button
-            onClick={handleEnable}
-            disabled={loading}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300"
-          >
-            {loading ? 'Cargando...' : 'Habilitar 2FA'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEnable}
+              disabled={loading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300"
+            >
+              {loading ? 'Cargando...' : 'Habilitar 2FA'}
+            </button>
+            <button
+              onClick={() => setShowReset(true)}
+              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+            >
+              Resetear 2FA
+            </button>
+          </div>
         </div>
       )}
 
       {qrCode && (
         <div>
           <p className="text-sm text-gray-600 mb-4">
-            Escanea este código QR con tu app de autenticación (Google Authenticator, Authy, etc.)
+            <strong>Paso 1:</strong> Escanea este código QR con tu app de autenticación (Google Authenticator, Authy, Microsoft Authenticator, etc.)
           </p>
           
           <div className="mb-4 flex justify-center">
@@ -130,7 +203,7 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
 
           <form onSubmit={handleVerify}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Código de verificación
+              <strong>Paso 2:</strong> Código de verificación (6 dígitos)
             </label>
             <input
               type="text"
@@ -141,13 +214,27 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
               placeholder="123456"
               required
             />
-            <button
-              type="submit"
-              disabled={loading || verifyCode.length !== 6}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-            >
-              {loading ? 'Verificando...' : 'Verificar y Activar'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={loading || verifyCode.length !== 6}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
+              >
+                {loading ? 'Verificando...' : 'Verificar y Activar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setQrCode('');
+                  setSecret('');
+                  setVerifyCode('');
+                  setError('');
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -164,6 +251,30 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
           >
             {loading ? 'Desactivando...' : 'Desactivar 2FA'}
           </button>
+        </div>
+      )}
+
+      {showReset && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 className="font-medium text-yellow-800 mb-2">Resetear 2FA</h3>
+          <p className="text-sm text-yellow-700 mb-3">
+            Esto eliminará todos los factores 2FA existentes y te permitirá configurar uno nuevo.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleReset2FA}
+              disabled={loading}
+              className="px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 disabled:bg-gray-300"
+            >
+              {loading ? 'Reseteando...' : 'Confirmar Reset'}
+            </button>
+            <button
+              onClick={() => setShowReset(false)}
+              className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
     </div>
