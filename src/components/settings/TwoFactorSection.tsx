@@ -11,37 +11,39 @@ interface TwoFactorSectionProps {
 export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFactorSectionProps) {
   const [qrCode, setQrCode] = useState('');
   const [secret, setSecret] = useState('');
+  const [factorId, setFactorId] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const supabase = createClient();
 
+  const cleanupUnverifiedFactors = async () => {
+    const factors = await supabase.auth.mfa.listFactors();
+    if (factors.error) throw factors.error;
+
+    if (factors.data?.totp && factors.data.totp.length > 0) {
+      for (const factor of factors.data.totp) {
+        if (factor.status !== 'verified') {
+          await supabase.auth.mfa.unenroll({ factorId: factor.id });
+        }
+      }
+    }
+  };
+
   const handleEnable = async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Primero verificar si hay factores existentes
-      const factors = await supabase.auth.mfa.listFactors();
-      if (factors.error) throw factors.error;
+      await cleanupUnverifiedFactors();
 
-      // Si hay factores TOTP no verificados, eliminarlos primero
-      if (factors.data?.totp && factors.data.totp.length > 0) {
-        for (const factor of factors.data.totp) {
-          if (factor.status !== 'verified') {
-            await supabase.auth.mfa.unenroll({ factorId: factor.id });
-          }
-        }
-      }
-
-      // Ahora crear el nuevo factor
       const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
-
       if (error) throw error;
 
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
+      setFactorId(data.id);
     } catch (err: any) {
       setError(err.message || 'Error al habilitar 2FA');
     } finally {
@@ -55,32 +57,46 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
     setError('');
 
     try {
-      const factors = await supabase.auth.mfa.listFactors();
-      if (factors.error) throw factors.error;
-
-      // Buscar el factor TOTP más reciente no verificado
-      const totpFactor = factors.data.totp?.find(f => f.status !== 'verified') || factors.data.totp?.[0];
-      if (!totpFactor) throw new Error('No se encontró el factor TOTP');
+      if (!factorId) throw new Error('No hay factor para verificar');
 
       const { error } = await supabase.auth.mfa.challengeAndVerify({
-        factorId: totpFactor.id,
+        factorId: factorId,
         code: verifyCode
       });
 
       if (error) {
         if (error.message.includes('Invalid TOTP code')) {
-          throw new Error('Código incorrecto. Verifica que el código sea de 6 dígitos y esté actualizado.');
+          throw new Error('Código incorrecto. Verifica que esté actualizado.');
         }
         throw error;
       }
 
       setQrCode('');
       setSecret('');
+      setFactorId('');
       setVerifyCode('');
       onStatusChange();
     } catch (err: any) {
       setError(err.message || 'Código incorrecto');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setLoading(true);
+    try {
+      if (factorId) {
+        await supabase.auth.mfa.unenroll({ factorId });
+      }
+    } catch (err) {
+      console.warn('Error limpiando factor:', err);
+    } finally {
+      setQrCode('');
+      setSecret('');
+      setFactorId('');
+      setVerifyCode('');
+      setError('');
       setLoading(false);
     }
   };
@@ -95,11 +111,9 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
       const factors = await supabase.auth.mfa.listFactors();
       if (factors.error) throw factors.error;
 
-      // Eliminar todos los factores TOTP
       if (factors.data?.totp && factors.data.totp.length > 0) {
         for (const factor of factors.data.totp) {
-          const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
-          if (error) console.warn('Error eliminando factor:', error);
+          await supabase.auth.mfa.unenroll({ factorId: factor.id });
         }
       }
 
@@ -116,20 +130,21 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
 
     setLoading(true);
     setError('');
-    setQrCode('');
-    setSecret('');
-    setVerifyCode('');
 
     try {
-      const response = await fetch('/api/auth/mfa', {
-        method: 'DELETE',
-      });
+      const factors = await supabase.auth.mfa.listFactors();
+      if (factors.error) throw factors.error;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al resetear 2FA');
+      if (factors.data?.totp && factors.data.totp.length > 0) {
+        for (const factor of factors.data.totp) {
+          await supabase.auth.mfa.unenroll({ factorId: factor.id });
+        }
       }
 
+      setQrCode('');
+      setSecret('');
+      setFactorId('');
+      setVerifyCode('');
       setShowReset(false);
       onStatusChange();
     } catch (err: any) {
@@ -224,13 +239,9 @@ export default function TwoFactorSection({ isEnabled, onStatusChange }: TwoFacto
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setQrCode('');
-                  setSecret('');
-                  setVerifyCode('');
-                  setError('');
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                onClick={handleCancel}
+                disabled={loading}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:bg-gray-200"
               >
                 Cancelar
               </button>
