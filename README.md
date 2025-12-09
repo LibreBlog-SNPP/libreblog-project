@@ -2,7 +2,7 @@
 
 # LibreBlog
 
-LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15.5.4, donde los usuarios pueden crear, compartir y descubrir contenido de manera libre y segura. Incluye un editor Markdown avanzado, sistema de comentarios anidados, notificaciones en tiempo real, moderación NSFW manual, perfiles personalizables con temas y decoraciones, y un sistema de seguridad completo con autenticación via Supabase, verificación de contraseñas comprometidas y Row Level Security. Diseñada para ser responsive, accesible y escalable, con deployment optimizado en Vercel (v2.1.0).
+LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 16.0.8, donde los usuarios pueden crear, compartir y descubrir contenido de manera libre y segura. Incluye un editor Markdown avanzado, sistema de comentarios anidados, notificaciones en tiempo real, moderación NSFW manual, perfiles personalizables con temas y decoraciones, y un sistema de seguridad completo con autenticación via Supabase, verificación de contraseñas comprometidas y Row Level Security. Diseñada para ser responsive, accesible y escalable, con deployment optimizado en Vercel (v2.1.0).
 
 ## Características
 
@@ -40,7 +40,7 @@ LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15.5.4,
 
 ## Tecnologías Principales
 
-- **Next.js 15.5.4**: Framework React para SSR/SSG, con App Router para rutas anidadas, Server Components para data fetching eficiente, y API Routes para backend.
+- **Next.js 16.0.8**: Framework React para SSR/SSG, con App Router para rutas anidadas, Server Components para data fetching eficiente, y API Routes para backend.
 - **React 19.1.2**: Librería para UI con hooks y concurrent features; TypeScript agrega type safety a componentes y props.
 - **Tailwind CSS 4.1.14**: Framework utility-first para estilos rápidos y consistentes; usado con @tailwindcss/typography para Markdown.
 - **Prisma ORM 6.17.1**: Mapeo objeto-relacional para PostgreSQL; genera queries type-safe y maneja migraciones.
@@ -53,7 +53,7 @@ LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15.5.4,
 
 ## Arquitectura y Estructura del Proyecto
 
-El proyecto sigue una arquitectura modular con Next.js 15.5.4 App Router, separando frontend (Client Components) y backend (Server Components + API Routes). Usa Prisma 6.17.1 para acceso a BD type-safe y Supabase 2.75.0 para auth/RLS.
+El proyecto sigue una arquitectura modular con Next.js 16.0.8 App Router, separando frontend (Client Components) y backend (Server Components + API Routes). Usa Prisma 6.17.1 para acceso a BD type-safe y Supabase 2.75.0 para auth/RLS.
 
 ```
 src/
