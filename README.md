@@ -2,7 +2,7 @@
 
 # LibreBlog
 
-LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15, donde los usuarios pueden crear, compartir y descubrir contenido de manera libre y segura. Incluye un editor Markdown avanzado, sistema de comentarios anidados, notificaciones en tiempo real, moderación NSFW manual, perfiles personalizables con temas y decoraciones, y un sistema de seguridad completo con autenticación via Supabase, verificación de contraseñas comprometidas y Row Level Security. Diseñada para ser responsive, accesible y escalable, con deployment optimizado en Vercel (v2.1.0).
+LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15.5.4, donde los usuarios pueden crear, compartir y descubrir contenido de manera libre y segura. Incluye un editor Markdown avanzado, sistema de comentarios anidados, notificaciones en tiempo real, moderación NSFW manual, perfiles personalizables con temas y decoraciones, y un sistema de seguridad completo con autenticación via Supabase, verificación de contraseñas comprometidas y Row Level Security. Diseñada para ser responsive, accesible y escalable, con deployment optimizado en Vercel (v2.1.0).
 
 ## Características
 
@@ -40,19 +40,20 @@ LibreBlog es una plataforma moderna de blogging desarrollada con Next.js 15, don
 
 ## Tecnologías Principales
 
-- **Next.js 15**: Framework React para SSR/SSG, con App Router para rutas anidadas, Server Components para data fetching eficiente, y API Routes para backend.
-- **React 18**: Librería para UI con hooks y concurrent features; TypeScript agrega type safety a componentes y props.
-- **Tailwind CSS**: Framework utility-first para estilos rápidos y consistentes; usado con @tailwindcss/typography para Markdown.
-- **Prisma ORM**: Mapeo objeto-relacional para PostgreSQL; genera queries type-safe y maneja migraciones.
-- **Supabase**: Backend-as-a-Service con PostgreSQL, Auth (JWT sessions), Storage, y RLS para seguridad.
-- **html2pdf.js**: Librería para convertir HTML de posts a PDF descargable.
-- **nsfwjs y bad-words**: Moderación NSFW manual (nsfwjs para imágenes, bad-words para texto); no automática en v2.0.0.
-- **Vitest**: Framework de testing moderno para unit/integration tests; ESLint para linting de código.
+- **Next.js 15.5.4**: Framework React para SSR/SSG, con App Router para rutas anidadas, Server Components para data fetching eficiente, y API Routes para backend.
+- **React 19.1.2**: Librería para UI con hooks y concurrent features; TypeScript agrega type safety a componentes y props.
+- **Tailwind CSS 4.1.14**: Framework utility-first para estilos rápidos y consistentes; usado con @tailwindcss/typography para Markdown.
+- **Prisma ORM 6.17.1**: Mapeo objeto-relacional para PostgreSQL; genera queries type-safe y maneja migraciones.
+- **Supabase 2.75.0**: Backend-as-a-Service con PostgreSQL, Auth (JWT sessions), Storage, y RLS para seguridad.
+- **TypeScript 5**: Superset de JavaScript con tipado estático para mayor seguridad y productividad.
+- **html2pdf.js 0.12.1**: Librería para convertir HTML de posts a PDF descargable.
+- **nsfwjs 4.2.1 y bad-words 4.0.0**: Moderación NSFW manual (nsfwjs para imágenes, bad-words para texto).
+- **Vitest 2.1.8**: Framework de testing moderno para unit/integration tests; ESLint 9 para linting de código.
 - **Vercel**: Plataforma de deployment con optimizaciones para Next.js (CDN, ISR, analytics).
 
 ## Arquitectura y Estructura del Proyecto
 
-El proyecto sigue una arquitectura modular con Next.js 15 App Router, separando frontend (Client Components) y backend (Server Components + API Routes). Usa Prisma para acceso a BD type-safe y Supabase para auth/RLS.
+El proyecto sigue una arquitectura modular con Next.js 15.5.4 App Router, separando frontend (Client Components) y backend (Server Components + API Routes). Usa Prisma 6.17.1 para acceso a BD type-safe y Supabase 2.75.0 para auth/RLS.
 
 ```
 src/
