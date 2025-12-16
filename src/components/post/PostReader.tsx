@@ -90,7 +90,7 @@ export default function PostReader({ content, enablePagination = false, showTabl
   return (
     <div className="space-y-6">
       {/* Metadata */}
-      <div className="flex items-center gap-4 text-sm text-[#dedff1]/60">
+      <div className="flex items-center gap-4 text-sm text-[#dedff1]">
         <span>{wordCount.toLocaleString()} palabras</span>
         <span>•</span>
         <span>{readingTime} min de lectura</span>
@@ -215,7 +215,7 @@ export default function PostReader({ content, enablePagination = false, showTabl
             </Button>
           </div>
           
-          <div className="text-sm text-[#dedff1]/60">
+          <div className="text-sm text-[#dedff1]">
             Página {currentPage} de {pages.length}
           </div>
         </div>
